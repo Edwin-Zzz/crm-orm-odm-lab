@@ -87,7 +87,15 @@ Cada suite restablece PostgreSQL y MongoDB antes de ejecutarse y cierra las cone
 
 Los errores se devuelven como JSON: `{ "error": "Contact not found" }`.
 
-   ## Respuestas
+## Respuestas
+**1. Dos motores.**
+Una razon por la cual Activity se implementa dentro de una base de datos documental es por su atributo "metadata" que como podemos observar en la implementacion del reto 6 es un atributo que cambia de estructura segun el tipo de actividad (CALL, EMAIL, MEETING). Es esta flexibilidad que la hace candidata para una BD NoSQL. Company y Contact son candidatas para una estructura relacional por las relaciones estructuradas que existen entre ellas (un contacto pertenece a una empresa) algo que refuerza una base de datos relacional y facilita las consultas sobre ella, algo que pudimos observar tambien en el reto 5.
+
+**2. ORM vs ODM.**
+Un ORM y un ODM son "traductores" que nos dejan trabajar con las bases de datos usando objetos y funciones de JavaScript en vez de escribir las consultas o inserts a mano. Aqui usamos Sequelize como el ORM para conectar a PostgreSQL y Mongoose como ODM para conectar a MongoDB. Una diferencia importante es en donde se aplica la estructura: en Sequelize la respalda PostgreSQL en su Schema con "allowNull: false" en contact.js, pero el esquema de Mongoose solo lo aplica Mongoose (el ODM, no la base de datos), y en las actualizaciones hay que pedir las validaciones con "runValidators: true", como en el reto 8.
+
+**3. Configuracion por variables de entorno.**
+Las variables estan definidas en .devcontainer/docker-compose.yml, en el bloque environment conteniendo: DB_HOST: postgres, MONGODB_URI: mongodb://mongo:27017/crm, usuario, password, etc. Docker las inyecta al contenedor y el codigo las lee con process.env. Estas no se escriben en los .js porque el codigo se sube al repositorio y cualquiera que lo vea tendria las credenciales (esto cae dentro del OWASP Top 10 2025 como el A07 Authentication Failures). Los hosts no son localhost porque app, postgres y mongo son contenedores separados. localhost dentro de app seria la app misma, asi que se usan los nombres de los servicios.
 
    ## Evidencia
    <img width="811" height="540" alt="npm test con las 9 pruebas en verde" src="https://github.com/user-attachments/assets/da46b840-156b-45cb-9dde-ce5e5c993e37" />
