@@ -106,6 +106,15 @@ Traer la compañía y luego hacer una segunda consulta para sus contactos implic
 **6. Instancia vs consulta.**
 Buscar primero el registro con findByPk y luego .update() nos permite validar si el registro existe primero (y mandar un 404 en caso de que no este) y permite regresar el objeto actualizado. Mientras que usar Model.update({...}, { where }) directo, aunque si nos permite validar si un registro existe, no regresa el objeto actualizado, sino solo la cantidad de filas afectadas. La ventaja de usar find + update es que nos facilita la revision y uso directo del objeto, pero cuesta dos consultas, mientras que usar un .update + where es mas eficiente, sobre todo para las actualizaciones masivas, aunque para revisar los cambios se requieren consultas adicionales.
 
+**7. Esquema flexible.**
+En models/mongoose/activity.js, metadata usa el tipo Schema.Types.Mixed, que permite guardar cualquier estructura de objeto sin que Mongoose la valide contra un esquema fijo, por eso metadata puede aceptar campos distintos segun la actividad (CALL, EMAIL o MEETING). La desventaja es que se pierde la validacion de tipos y de campos para ese campo.
+
+**8. Sin ref.**
+ref y populate solo funcionan entre datos de modelos que viven en la misma base de datos de MongoDB, mientras que contactId y userId hacen referencia a tablas de PostgreSQL, es decir una base de datos distinta la cual no conoce directamente Mongoose y que no puede unir. La consecuencia de esto, es que no existe integridad referencial entre las bases de datos. Eliminar un usuario o contacto en PostgreSQL no elimina la referencia a ellos en las actividades de MongoDB, dejandolas con un id que apunta a nadie.
+
+**9. Documento actualizado.**
+Antes de la correccion, findByIdAndUpdate devolvia el documento tal como estaba antes del cambio, porque ese es su comportamiento por defecto en Mongoose. Para que devolviera el documento ya actualizado, se agrego la opcion returnDocument: 'after' (tambien funciona usar { new: true }).
+
    ## Evidencia
    <img width="811" height="540" alt="npm test con las 9 pruebas en verde" src="https://github.com/user-attachments/assets/da46b840-156b-45cb-9dde-ce5e5c993e37" />
 
