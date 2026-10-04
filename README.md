@@ -97,6 +97,15 @@ Un ORM y un ODM son "traductores" que nos dejan trabajar con las bases de datos 
 **3. Configuracion por variables de entorno.**
 Las variables estan definidas en .devcontainer/docker-compose.yml, en el bloque environment conteniendo: DB_HOST: postgres, MONGODB_URI: mongodb://mongo:27017/crm, usuario, password, etc. Docker las inyecta al contenedor y el codigo las lee con process.env. Estas no se escriben en los .js porque el codigo se sube al repositorio y cualquiera que lo vea tendria las credenciales (esto cae dentro del OWASP Top 10 2025 como el A07 Authentication Failures). Los hosts no son localhost porque app, postgres y mongo son contenedores separados. localhost dentro de app seria la app misma, asi que se usan los nombres de los servicios.
 
+**4. Asociaciones.**
+En models/sequelize/index.js podemos ver que un contacto tiene 1 empresa (Contact.belongsTo) y una empresa puede tener varios contactos (Company.hasMany), generando una relacion 1 -> N entre contacts y company. La llave foranea utilizada es companyId que vive en la tabla de contacts. El alias as: "contacts" sirve para que, al usar include: { model: Contact, as: "contacts" }, la información incluida del modelo Contact aparezca listada bajo ese nombre de campo (contacts) en el resultado.
+
+**5. Eager loading.**
+Traer la compañía y luego hacer una segunda consulta para sus contactos implicaria hacer dos viajes separados a la base de datos, mientras que usar include hace que Sequelize genere una sola consulta con un JOIN que trae todo junto. Es preferible el include porque reduce la latencia total y evita múltiples viajes a la base de datos.
+
+**6. Instancia vs consulta.**
+Buscar primero el registro con findByPk y luego .update() nos permite validar si el registro existe primero (y mandar un 404 en caso de que no este) y permite regresar el objeto actualizado. Mientras que usar Model.update({...}, { where }) directo, aunque si nos permite validar si un registro existe, no regresa el objeto actualizado, sino solo la cantidad de filas afectadas. La ventaja de usar find + update es que nos facilita la revision y uso directo del objeto, pero cuesta dos consultas, mientras que usar un .update + where es mas eficiente, sobre todo para las actualizaciones masivas, aunque para revisar los cambios se requieren consultas adicionales.
+
    ## Evidencia
    <img width="811" height="540" alt="npm test con las 9 pruebas en verde" src="https://github.com/user-attachments/assets/da46b840-156b-45cb-9dde-ce5e5c993e37" />
 
