@@ -115,6 +115,15 @@ ref y populate solo funcionan entre datos de modelos que viven en la misma base 
 **9. Documento actualizado.**
 Antes de la correccion, findByIdAndUpdate devolvia el documento tal como estaba antes del cambio, porque ese es su comportamiento por defecto en Mongoose. Para que devolviera el documento ya actualizado, se agrego la opcion returnDocument: 'after' (tambien funciona usar { new: true }).
 
+**10. Pruebas de comportamiento.**
+Probar el comportamiento de la API y no su implementacion sirve porque nos da la libertad de cambiar el codigo y encontrar soluciones mas optimizadas, mas claras o incluso mas seguras de nuestro codigo, sin que las pruebas se rompan, siempre y cuando se regrese los valores esperados. Esto es especialmente util porque en el mundo del software nuevas librerias, implementaciones o vulnerabilidades se descubren frecuentemente, entonces al revisar el comportamiento y no la implementacion nos permite dar un mejor mantenimiento al codigo.
+
+**11. Repetibilidad.**
+tests/setup.js se conecta a las bases de datos con await connectSequelize() y connectMongoose() y usa await reset() para restaurar solo los datos conocidos, despues cierra las conexiones al terminar con closeSequelize() y closeMongoose(). Con esto se asegura que cada suite empieza desde el mismo estado, sin importar que suites se realizaron antes y evita problemas donde los cambios que realiza una suite pueda afectar otra. Esto es necesario para que las pruebas sean deterministas, porque sin ello se volverian inconsistentes.
+
+**12. Mi experiencia.**
+El reto mas complicado para mi fue el 5. La documentacion de Eager Loading tiene muchas variaciones y al inicio no sabia cual de ellas usar. Despues compare los ejemplos con el codigo del proyecto y escribi el include, pero Jest me dio este error: "You've included an alias (contact), but it does not match the alias(es) defined in your association (contacts)". Eso me hizo ver que habia olvidado revisar antes el alias real en models/sequelize/index.js. Lo cambie rapido y me quedo la leccion de leer primero el codigo que ya existe (en este caso models/sequelize/index.js) antes de escribir el mio.
+
    ## Evidencia
    <img width="811" height="540" alt="npm test con las 9 pruebas en verde" src="https://github.com/user-attachments/assets/da46b840-156b-45cb-9dde-ce5e5c993e37" />
 
